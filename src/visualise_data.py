@@ -1,23 +1,76 @@
 import pandas
 import plotly.express as px
+import plotly.graph_objects as go
 import dash
 
 
 path = "data.csv"
-branch = "north"
-
 data = pandas.read_csv(path)
-data = data[data.branch.eq(branch)]
 
-fig = px.line(data, x="date", y="sales", title='Pink Morsel sales over time')
+
+def data_by_branch(branch):
+    return data[data.branch.eq(branch)]
+
+
+def plot_branch(branch):
+    return px.line(
+        data_by_branch(branch), 
+        x="date", 
+        y="sales", )
+    
+
+def plot_all_branches():
+    return px.line(
+        data, 
+        x="date", 
+        y="sales",
+        color="branch")
+
+
+def apply_style(graph):
+    #graph.update_layout(paper_bgcolor="#3f3f3f")
+    #graph.update_layout(legend_title_font_color="#ffffff")
+    #graph.update_layout(font_color="#ffffff")
+    graph.update_layout(
+        {
+            "title": {
+                "text": "Pink Morsel sales over time",
+                "font": {
+                    "color": "#ffffff"
+                }
+            },
+            "font": {
+                "color": "#ffffff"
+            },
+            "paper_bgcolor": "#202020",
+            "plot_bgcolor": "#202020"
+        }
+    )
+    graph.update_xaxes(linecolor='#808080', gridcolor='#606060')
+    graph.update_yaxes(linecolor='#808080', gridcolor='#606060')
+    return graph
+
 
 app = dash.Dash(__name__)
-
 app.layout = dash.html.Div(children=[
     dash.dcc.Graph(
-        id='pink-morsel-graph',
-        figure=fig
-    )
-])
+        id="main-graph",
+        figure=plot_all_branches()),
+    dash.dcc.RadioItems(
+        id="branch-select",
+        options = ['North', 'East','South', 'West', 'All'], 
+        value="North")])
 
-app.run_server()
+
+@app.callback(
+    dash.Output(component_id='main-graph', component_property='figure'),
+    dash.Input(component_id='branch-select', component_property='value')
+)
+
+def update(input_value):
+    if input_value == "All":
+        return apply_style(plot_all_branches())
+    else:
+        return apply_style(plot_branch(input_value.lower()))
+
+app.run_server(debug=True)
