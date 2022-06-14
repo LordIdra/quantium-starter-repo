@@ -1,5 +1,5 @@
 import csv
-from this import d
+
 
 paths_in = ["data/daily_sales_data_0.csv", "data/daily_sales_data_1.csv", "data/daily_sales_data_2.csv"]
 
@@ -42,7 +42,9 @@ def write_output(path, data):
         writer.writerows(data)
 
 
-final_data = []
+final_data = [
+    ["sales", "date", "branch"]
+]
 
 for path in paths_in:
     with open(path, newline='') as file:
